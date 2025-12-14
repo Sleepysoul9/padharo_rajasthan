@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Padharo Rajasthan | Official Portal</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        /* --- 1. DESIGN SYSTEM --- */
+        :root {
+            --primary: #D35400;       /* Marigold Orange */
+            --primary-dark: #A04000;
+            --royal-blue: #1A252F;    /* Deep Royal Blue */
+            --sand: #FDF2E9;          /* Desert Sand */
+            --glass: rgba(255, 255, 255, 0.85);
+            --glass-border: rgba(255, 255, 255, 0.5);
+            --shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+        }
+
+        * { box-sizing: border-box; transition: all 0.3s ease; }
+
+        body { 
+            margin: 0; 
+            font-family: 'Poppins', sans-serif; 
+            background-color: var(--sand);
+            color: #2c3e50; 
+            overflow-x: hidden; 
+        }
+
+        h1, h2, h3 { font-family: 'Playfair Display', serif; color: var(--royal-blue); }
+        .hidden { display: none !important; }
+
+        /* Animation */
+        .fade-in { animation: fadeIn 0.5s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Inputs & Buttons */
+        .form-control {
+            width: 100%; padding: 15px; margin-bottom: 20px; 
+            border: 2px solid #e0e0e0; border-radius: 12px; 
+            background: rgba(255,255,255,0.9); font-size: 15px;
+        }
+        .form-control:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 4px rgba(211, 84, 0, 0.1); }
+        
+        .btn-main {
+            width: 100%; padding: 15px; 
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark)); 
+            color: white; border: none; border-radius: 12px; 
+            font-weight: 600; font-size: 16px; letter-spacing: 0.5px;
+            box-shadow: 0 4px 15px rgba(211, 84, 0, 0.3);
+        }
+        .btn-main:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(211, 84, 0, 0.4); }
+
+        /* --- 2. LOGIN SCREEN (Hero Image) --- */
+        .login-wrapper {
+            height: 100vh; display: flex; align-items: center; justify-content: center;
+            /* IMAGE: Hawa Mahal / Jaipur Architecture */
+            background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1599661046289-e31897846e41?q=80&w=1920&auto=format&fit=crop');
+            background-size: cover; background-position: center;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            padding: 50px 40px; width: 100%; max-width: 420px;
+            border-radius: 24px; text-align: center;
+            box-shadow: var(--shadow);
+        }
+
+        .logo-icon { font-size: 3em; color: var(--primary); margin-bottom: 10px; text-shadow: 2px 2px 4px rgba(0,0,0,0.1); }
+
+        /* --- 3. ADMIN DASHBOARD --- */
+        .admin-layout { display: flex; min-height: 100vh; background: #f4f6f9; }
+        
+        .sidebar {
+            width: 280px; background: var(--royal-blue); color: white;
+            padding: 30px; display: flex; flex-direction: column; position: fixed; height: 100%; z-index: 100;
+            box-shadow: 4px 0 20px rgba(0,0,0,0.1);
+        }
+        
+        .menu-item {
+            padding: 16px; margin: 5px 0; border-radius: 10px; cursor: pointer; 
+            color: #BDC3C7; display: flex; align-items: center; gap: 15px; font-weight: 500;
+        }
+        .menu-item:hover, .menu-item.active { background: rgba(255,255,255,0.15); color: white; transform: translateX(5px); }
+        .menu-item i { width: 25px; }
+
+        .admin-main { margin-left: 280px; padding: 40px; width: 100%; background-image: radial-gradient(#e0e0e0 1px, transparent 1px); background-size: 20px 20px; }
+
+        /* Stats Cards */
+        .kpi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px; margin-bottom: 30px; }
+        .kpi-box { 
+            padding: 25px; border-radius: 20px; color: white; position: relative; overflow: hidden;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .kpi-box::after { content: ''; position: absolute; top: -50%; right: -50%; width: 200px; height: 200px; background: rgba(255,255,255,0.2); border-radius: 50%; }
+        
+        .card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); margin-bottom: 25px; border: 1px solid #eee; }
+
+        /* Table Styling */
+        table { width: 100%; border-collapse: separate; border-spacing: 0 10px; }
+        th { text-align: left; color: #95a5a6; padding: 15px; font-weight: 600; text-transform: uppercase; font-size: 0.8em; letter-spacing: 1px; }
+        td { padding: 15px; background: white; border-top: 1px solid #eee; border-bottom: 1px solid #eee; }
+        td:first-child { border-left: 1px solid #eee; border-top-left-radius: 10px; border-bottom-left-radius: 10px; font-weight: 600; }
+        td:last-child { border-right: 1px solid #eee; border-top-right-radius: 10px; border-bottom-right-radius: 10px; }
+
+        /* --- 4. STAFF MOBILE INTERFACE --- */
+        .staff-bg { 
+            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%); 
+            min-height: 100vh; padding: 20px; display: flex; justify-content: center; 
+        }
+        .staff-container { width: 100%; max-width: 500px; }
+        
+        .staff-header-card {
+            background: var(--royal-blue); color: white; padding: 25px; border-radius: 20px;
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;
+            box-shadow: 0 10px 25px rgba(44, 62, 80, 0.3);
+            background-image: url('https://www.transparenttextures.com/patterns/cubes.png');
+        }
+
+        .action-btn {
+            background: white; border: none; padding: 30px; margin-bottom: 20px; border-radius: 20px;
+            display: flex; align-items: center; gap: 25px; transition: 0.2s; width: 100%;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05); text-align: left;
+        }
+        .action-btn:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(211, 84, 0, 0.15); border: 1px solid var(--primary); }
+        .icon-circle { width: 60px; height: 60px; background: #FEF5E7; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5em; color: var(--primary); }
+
+        /* --- 5. KIOSK / TICKET --- */
+        .ticket-view {
+            min-height: 100vh; display: flex; align-items: center; justify-content: center;
+            background: url('https://images.unsplash.com/photo-1524230507669-5ff97982bb5e?q=80&w=1920&auto=format&fit=crop');
+            background-size: cover;
+        }
+        .ticket-paper {
+            background: white; width: 100%; max-width: 380px; border-radius: 20px; overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3); position: relative;
+        }
+        .ticket-top { background: var(--primary); padding: 30px; text-align: center; color: white; position: relative; }
+        .ticket-top::after {
+            content: ''; position: absolute; bottom: -10px; left: 0; width: 100%; height: 20px;
+            background: white; border-radius: 20px 20px 0 0;
+        }
+
+        .status-box { padding: 15px; border-radius: 12px; margin-top: 20px; text-align: center; font-weight: 500; }
+        .status-success { background: #D5F5E3; color: #196F3D; border: 1px solid #196F3D; }
+        .status-error { background: #FADBD8; color: #922B21; border: 1px solid #922B21; }
+
+    </style>
+</head>
+<body>
+
+    <div id="view-login" class="login-wrapper fade-in">
+        <div class="glass-card">
+            <div class="logo-icon"><i class="fa-solid fa-gopuram"></i></div>
+            <h2 style="margin: 0; font-size: 2em;">Padharo Rajasthan</h2>
+            <p style="color: #555; margin-bottom: 30px;">Official Monument Entry Portal</p>
+            
+            <form onsubmit="handleLogin(event)">
+                <div style="position: relative;">
+                    <i class="fa-solid fa-envelope" style="position: absolute; left: 15px; top: 18px; color: #aaa;"></i>
+                    <input type="email" id="login-email" class="form-control" placeholder="Official Email ID" style="padding-left: 45px;" required>
+                </div>
+                <div style="position: relative;">
+                    <i class="fa-solid fa-lock" style="position: absolute; left: 15px; top: 18px; color: #aaa;"></i>
+                    <input type="password" id="login-pass" class="form-control" placeholder="Password" style="padding-left: 45px;" required>
+                </div>
+                <button type="submit" class="btn-main">Secure Login <i class="fa-solid fa-arrow-right" style="margin-left: 10px;"></i></button>
+            </form>
+            <p id="login-msg" style="color: #e74c3c; margin-top: 15px; font-weight: 600;"></p>
+            
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(0,0,0,0.1);">
+                <button onclick="switchView('kiosk')" style="background: none; border: none; color: var(--royal-blue); text-decoration: underline; cursor: pointer; font-family: inherit;">
+                    <i class="fa-solid fa-qrcode"></i> Check Tourist Ticket Status
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="view-admin" class="admin-layout hidden fade-in">
+        <nav class="sidebar">
+            <div style="text-align: center; margin-bottom: 40px;">
+                <i class="fa-solid fa-gopuram" style="font-size: 3em; color: var(--primary);"></i>
+                <h3 style="color: white; margin: 10px 0 0;">Padharo</h3>
+                <small style="opacity: 0.6;">Admin Panel</small>
+            </div>
+            
+            <div class="menu-item active" onclick="showAdminTab('overview')"><i class="fa-solid fa-chart-line"></i> Analytics</div>
+            <div class="menu-item" onclick="showAdminTab('staff')"><i class="fa-solid fa-id-badge"></i> Staff Manager</div>
+            <div class="menu-item" style="margin-top: auto; color: #e74c3c;" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</div>
+        </nav>
+
+        <div class="admin-main">
+            <div id="admin-tab-overview">
+                <h2 style="margin-bottom:30px">Dashboard Overview</h2>
+                <div class="kpi-grid">
+                    <div class="kpi-box" style="background: linear-gradient(45deg, #3498DB, #2980B9);">
+                        <i class="fa-solid fa-calendar-day" style="font-size: 2em; opacity: 0.3; position: absolute; right: 20px; top: 20px;"></i>
+                        <small>THIS MONTH</small>
+                        <div class="kpi-val" id="kpi-mtd">0</div>
+                    </div>
+                    <div class="kpi-box" style="background: linear-gradient(45deg, #F39C12, #D35400);">
+                        <i class="fa-solid fa-calendar" style="font-size: 2em; opacity: 0.3; position: absolute; right: 20px; top: 20px;"></i>
+                        <small>THIS YEAR</small>
+                        <div class="kpi-val" id="kpi-ytd">0</div>
+                    </div>
+                    <div class="kpi-box" style="background: linear-gradient(45deg, #27AE60, #219150);">
+                        <i class="fa-solid fa-users" style="font-size: 2em; opacity: 0.3; position: absolute; right: 20px; top: 20px;"></i>
+                        <small>TOTAL VISITS</small>
+                        <div class="kpi-val" id="kpi-total">0</div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3 style="margin-top:0">Traffic Trends</h3>
+                    <canvas id="trafficChart" style="max-height: 400px;"></canvas>
+                </div>
+                
+                <div class="card" style="border-left: 5px solid #C0392B;">
+                    <div style="display:flex; justify-content:space-between; align-items:center">
+                        <div>
+                            <h4 style="margin:0; color:#C0392B;">Danger Zone</h4>
+                            <small>This will wipe all data.</small>
+                        </div>
+                        <button onclick="resetSystem()" style="background:#C0392B; color:white; border:none; padding:10px 20px; border-radius:8px;">Reset Database</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="admin-tab-staff" class="hidden">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                    <h2>Staff Directory</h2>
+                    <button onclick="document.getElementById('add-staff-form').classList.toggle('hidden')" class="btn-main" style="width:auto; padding: 10px 25px;">+ Add Employee</button>
+                </div>
+
+                <div id="add-staff-form" class="card hidden" style="background:#FEF9E7; border: 1px dashed var(--primary);">
+                    <h4 style="margin-top:0">Register New Staff</h4>
+                    <form onsubmit="handleAddStaff(event)" style="display:grid; grid-template-columns:1fr 1fr 1fr auto; gap:15px;">
+                        <input id="s-name" placeholder="Full Name" class="form-control" style="margin:0" required>
+                        <input id="s-email" placeholder="Email Address" class="form-control" style="margin:0" required>
+                        <input id="s-pass" value="staff123" class="form-control" style="margin:0" required>
+                        <button class="btn-main" style="width: auto;">Save</button>
+                    </form>
+                </div>
+
+                <table id="staff-table">
+                    <thead><tr><th>Name</th><th>Email ID</th><th>Role</th><th>Status</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="view-staff" class="staff-bg hidden fade-in">
+        <div class="staff-container">
+            <div class="staff-header-card">
+                <div>
+                    <h2 style="color:white; margin:0; font-size:1.5em;" id="staff-name-display">Staff</h2>
+                    <small style="opacity:0.8"><i class="fa-solid fa-circle-check"></i> On Duty</small>
+                </div>
+                <button onclick="logout()" style="background:rgba(255,255,255,0.2); border:none; color:white; padding:10px; border-radius:50%;"><i class="fa-solid fa-power-off"></i></button>
+            </div>
+
+            <div id="staff-menu">
+                <button class="action-btn" onclick="showStaffScreen('issue')">
+                    <div class="icon-circle"><i class="fa-solid fa-ticket"></i></div>
+                    <div>
+                        <h3 style="margin:0; font-size:1.2em;">Issue Ticket</h3>
+                        <small style="color:#7f8c8d">Generate pass & Send Email</small>
+                    </div>
+                    <i class="fa-solid fa-chevron-right" style="margin-left:auto; color:#ccc;"></i>
+                </button>
+                <button class="action-btn" onclick="showStaffScreen('scan')">
+                    <div class="icon-circle"><i class="fa-solid fa-qrcode"></i></div>
+                    <div>
+                        <h3 style="margin:0; font-size:1.2em;">Scan Entry</h3>
+                        <small style="color:#7f8c8d">Validate visitor ID</small>
+                    </div>
+                    <i class="fa-solid fa-chevron-right" style="margin-left:auto; color:#ccc;"></i>
+                </button>
+            </div>
+
+            <div id="staff-issue" class="hidden">
+                <button onclick="showStaffScreen('menu')" style="background:none; border:none; margin-bottom:20px; font-weight:600;"><i class="fa-solid fa-arrow-left"></i> Back</button>
+                <div class="card">
+                    <h3><i class="fa-solid fa-pen-nib" style="color:var(--primary)"></i> New Entry Pass</h3>
+                    <form onsubmit="issueTicket(event)">
+                        <label style="font-size:0.8em; font-weight:600; color:#777;">VISITOR DETAILS</label>
+                        <input id="t-name" placeholder="Full Name" class="form-control" required>
+                        <input id="t-email" type="email" placeholder="Email (for Ticket)" class="form-control" required>
+                        <div style="display:flex; gap:10px;">
+                            <input id="t-age" type="number" placeholder="Age" class="form-control" required>
+                            <input id="t-country" placeholder="Country" class="form-control" required>
+                        </div>
+                        <button class="btn-main">Generate & Send <i class="fa-solid fa-paper-plane"></i></button>
+                    </form>
+                    <div id="issue-res" class="status-box hidden"></div>
+                </div>
+            </div>
+
+            <div id="staff-scan" class="hidden">
+                <button onclick="showStaffScreen('menu')" style="background:none; border:none; margin-bottom:20px; font-weight:600;"><i class="fa-solid fa-arrow-left"></i> Back</button>
+                <div class="card" style="text-align:center;">
+                    <i class="fa-solid fa-expand" style="font-size:3em; color:#ddd; margin-bottom:20px;"></i>
+                    <h3>Validate Entry</h3>
+                    <p style="color:#777; font-size:0.9em;">Enter the 6-character unique ID</p>
+                    <form onsubmit="validateTicket(event)">
+                        <input id="v-id" placeholder="Ex: X7Y2Z9" class="form-control" style="text-align:center; font-size:1.5em; letter-spacing:5px; text-transform:uppercase;" required>
+                        <button class="btn-main">Verify Access</button>
+                    </form>
+                    <div id="scan-res" class="status-box hidden"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="view-kiosk" class="ticket-view hidden fade-in">
+        <div style="backdrop-filter: blur(10px); padding: 40px; border-radius: 30px; background: rgba(0,0,0,0.4);">
+            <div class="ticket-paper">
+                <div class="ticket-top">
+                    <i class="fa-solid fa-landmark" style="font-size:3em; margin-bottom:10px;"></i>
+                    <h3 style="color:white; margin:0;">Ticket Status</h3>
+                </div>
+                <div style="padding: 30px; text-align: center;">
+                    <p style="color:#7f8c8d; font-size:0.9em;">Please enter your ID to check validity</p>
+                    <input id="kiosk-id" class="form-control" placeholder="TICKET ID" style="text-align:center; letter-spacing:3px; font-weight:bold; font-size:1.2em;">
+                    <button onclick="checkTicketStatus()" class="btn-main" style="background: var(--royal-blue);">Check Now</button>
+                    
+                    <div style="border-top: 2px dashed #ddd; margin: 25px 0;"></div>
+                    
+                    <div id="kiosk-result" style="min-height:50px;">
+                        <span style="color:#ccc; font-size:0.9em;">Status will appear here</span>
+                    </div>
+                </div>
+            </div>
+            <button onclick="switchView('login')" style="margin-top:20px; background:none; border:none; color:white; width:100%; cursor:pointer;">&larr; Back to Staff Login</button>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5000/api';
+        let myChart = null;
+
+        // --- NAVIGATION CONTROLLER ---
+        function switchView(viewName) {
+            ['view-login', 'view-admin', 'view-staff', 'view-kiosk'].forEach(id => document.getElementById(id).classList.add('hidden'));
+            document.getElementById(`view-${viewName}`).classList.remove('hidden');
+        }
+
+        function logout() {
+            location.reload();
+        }
+
+        // --- 1. LOGIN LOGIC ---
+        async function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-pass').value;
+            const msg = document.getElementById('login-msg');
+
+            try {
+                const res = await fetch(`${API_URL}/login`, {
+                    method: 'POST', 
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await res.json();
+
+                if(data.success) {
+                    if(data.user.role === 'admin') {
+                        switchView('admin');
+                        loadAdminDashboard();
+                    } else if(data.user.role === 'staff') {
+                        switchView('staff');
+                        document.getElementById('staff-name-display').innerText = data.user.name;
+                    } else {
+                        msg.innerText = "Unknown Role";
+                    }
+                } else {
+                    msg.innerText = "❌ " + (data.error || "Login Failed");
+                }
+            } catch(err) {
+                msg.innerText = "❌ Connection Error";
+            }
+        }
+
+        // --- 2. ADMIN FUNCTIONS ---
+        function showAdminTab(tab) {
+            document.getElementById('admin-tab-overview').classList.add('hidden');
+            document.getElementById('admin-tab-staff').classList.add('hidden');
+            document.getElementById(`admin-tab-${tab}`).classList.remove('hidden');
+            
+            document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
+            // simple fix to highlight active tab
+            if(tab === 'overview') {
+                document.querySelectorAll('.menu-item')[0].classList.add('active');
+                loadAdminDashboard();
+            }
+            if(tab === 'staff') {
+                document.querySelectorAll('.menu-item')[1].classList.add('active');
+                loadStaffList();
+            }
+        }
+
+        async function loadAdminDashboard() {
+            const res = await fetch(`${API_URL}/admin/analytics`);
+            const data = await res.json();
+            
+            // KPI
+            document.getElementById('kpi-mtd').innerText = data.kpi.mtd;
+            document.getElementById('kpi-ytd').innerText = data.kpi.ytd;
+            document.getElementById('kpi-total').innerText = data.kpi.total;
+
+            // Chart
+            const ctx = document.getElementById('trafficChart').getContext('2d');
+            if(myChart) myChart.destroy();
+            myChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+                    datasets: [
+                        { label: '2025', data: data.graph.thisYear, borderColor: '#D35400', tension:0.4, fill: true, backgroundColor: 'rgba(211, 84, 0, 0.1)' },
+                        { label: '2024', data: data.graph.lastYear, borderColor: '#ccc', borderDash:[5,5], tension:0.4 }
+                    ]
+                }
+            });
+        }
+
+        async function loadStaffList() {
+            const res = await fetch(`${API_URL}/admin/staff`);
+            const list = await res.json();
+            const tbody = document.querySelector('#staff-table tbody');
+            tbody.innerHTML = '';
+            list.forEach(s => {
+                tbody.innerHTML += `<tr>
+                    <td><div style="display:flex; align-items:center; gap:10px;"><div style="width:30px; height:30px; background:#eee; border-radius:50%; display:flex; align-items:center; justify-content:center; color:#888"><i class="fa-solid fa-user"></i></div> ${s.name}</div></td>
+                    <td>${s.email}</td>
+                    <td>Ticket Collector</td>
+                    <td><span style="background:#D5F5E3; color:#196F3D; padding:4px 10px; border-radius:15px; font-size:0.8em; font-weight:bold;">Active</span></td>
+                </tr>`;
+            });
+        }
+
+        async function handleAddStaff(e) {
+            e.preventDefault();
+            const name = document.getElementById('s-name').value;
+            const email = document.getElementById('s-email').value;
+            const password = document.getElementById('s-pass').value;
+            
+            await fetch(`${API_URL}/admin/staff/add`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ name, email, password })
+            });
+            alert("Staff Added");
+            loadStaffList();
+            document.getElementById('add-staff-form').classList.add('hidden');
+        }
+
+        async function resetSystem() {
+            if(confirm("⚠️ FACTORY RESET: Are you sure?")) {
+                await fetch(`${API_URL}/admin/reset`, { method: 'POST' });
+                alert("System Reset Complete");
+                loadAdminDashboard();
+            }
+        }
+
+        // --- 3. STAFF FUNCTIONS ---
+        function showStaffScreen(screen) {
+            document.getElementById('staff-menu').classList.add('hidden');
+            document.getElementById('staff-issue').classList.add('hidden');
+            document.getElementById('staff-scan').classList.add('hidden');
+
+            if(screen === 'menu') document.getElementById('staff-menu').classList.remove('hidden');
+            else document.getElementById(`staff-${screen}`).classList.remove('hidden');
+        }
+
+        async function issueTicket(e) {
+            e.preventDefault();
+            const name = document.getElementById('t-name').value;
+            const email = document.getElementById('t-email').value; 
+            const age = document.getElementById('t-age').value;
+            const country = document.getElementById('t-country').value;
+            
+            const box = document.getElementById('issue-res');
+            box.classList.remove('hidden');
+            box.innerText = "⏳ Generating & Sending Email...";
+            box.className = 'status-box';
+
+            const res = await fetch(`${API_URL}/staff/create`, {
+                method: 'POST', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ name, email, age, country })
+            });
+            const data = await res.json();
+            
+            if(data.success) {
+                box.className = 'status-box status-success';
+                box.innerHTML = `✅ Ticket Created!<br>ID: <strong>${data.tourist.ticketId}</strong><br><small>Email sent to ${data.tourist.email}</small>`;
+                e.target.reset();
+            } else {
+                box.className = 'status-box status-error';
+                box.innerText = data.error;
+            }
+        }
+
+        async function validateTicket(e) {
+            e.preventDefault();
+            const ticketId = document.getElementById('v-id').value;
+            
+            const res = await fetch(`${API_URL}/staff/validate`, {
+                method: 'POST', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ ticketId, attractionId: 'MAIN_GATE' })
+            });
+            const data = await res.json();
+
+            const box = document.getElementById('scan-res');
+            box.classList.remove('hidden');
+            if(data.success) {
+                box.className = 'status-box status-success';
+                box.innerHTML = `✅ <strong>ACCESS GRANTED</strong><br>${data.tourist}<br><small>${data.country}</small>`;
+            } else {
+                box.className = 'status-box status-error';
+                box.innerHTML = `⛔ <strong>DENIED</strong><br>${data.message}`;
+            }
+        }
+
+        // --- 4. PUBLIC KIOSK FUNCTIONS ---
+        async function checkTicketStatus() {
+            const ticketId = document.getElementById('kiosk-id').value;
+            if(!ticketId) return;
+
+            const res = await fetch(`${API_URL}/staff/validate`, {
+                method: 'POST', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ ticketId, attractionId: 'CHECK_ONLY' })
+            });
+            const data = await res.json();
+            
+            const resBox = document.getElementById('kiosk-result');
+            
+            if(data.success) {
+                resBox.innerHTML = `<span style="color:#27AE60; font-weight:bold; font-size:1.4em;">VALID TICKET</span><br>Guest: ${data.tourist}`;
+            } else {
+                if(data.message.includes("used")) {
+                    resBox.innerHTML = `<span style="color:#F39C12; font-weight:bold; font-size:1.2em;">ALREADY USED</span><br>Ticket scanned earlier today.`;
+                } else {
+                    resBox.innerHTML = `<span style="color:#C0392B; font-weight:bold; font-size:1.2em;">INVALID ID</span><br>Ticket not found.`;
+                }
+            }
+        }
+    </script>
+</body>
+</html>

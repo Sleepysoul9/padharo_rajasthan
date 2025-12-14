@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Padharo Rajasthan | Super Admin</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root {
+            --primary: #D35400;       /* Rajasthani Orange */
+            --sidebar-bg: #1A252F;    /* Deep Royal Blue */
+            --bg-color: #F4F7F6;      /* Clean Light Grey */
+            --text-dark: #2C3E50;
+            --success: #27AE60;
+            --danger: #C0392B;
+        }
+
+        body { margin: 0; font-family: 'Poppins', sans-serif; background: var(--bg-color); color: var(--text-dark); overflow-x: hidden; }
+        
+        /* --- LOGIN PAGE --- */
+        .login-wrapper {
+            height: 100vh; display: flex; align-items: center; justify-content: center;
+            /* High Quality Background Image */
+            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.7)), url('https://images.unsplash.com/photo-1599661046289-e31897846e41?q=80&w=1920&auto=format&fit=crop');
+            background-size: cover; background-position: center;
+        }
+        .login-card {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 50px; width: 100%; max-width: 380px;
+            border-radius: 15px; box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+            text-align: center; backdrop-filter: blur(5px);
+        }
+        .login-card h2 { margin: 0 0 10px; color: var(--sidebar-bg); font-weight: 600; }
+        .login-card p { color: #7f8c8d; font-size: 0.9em; margin-bottom: 30px; }
+        
+        .form-group { margin-bottom: 20px; text-align: left; }
+        .form-group label { font-size: 0.85em; font-weight: 600; color: #7f8c8d; display: block; margin-bottom: 5px; }
+        .form-control {
+            width: 100%; padding: 12px; border: 2px solid #eee; border-radius: 8px;
+            font-family: 'Poppins'; font-size: 14px; box-sizing: border-box; transition: 0.3s;
+        }
+        .form-control:focus { border-color: var(--primary); outline: none; }
+        
+        .btn-login {
+            width: 100%; padding: 14px; background: var(--sidebar-bg); color: white;
+            border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.3s;
+        }
+        .btn-login:hover { background: var(--primary); transform: translateY(-2px); }
+
+        /* --- DASHBOARD LAYOUT --- */
+        .dashboard { display: flex; min-height: 100vh; }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 260px; background: var(--sidebar-bg); color: white;
+            display: flex; flex-direction: column; padding: 20px; position: fixed; height: 100%;
+        }
+        .brand { font-size: 1.4em; font-weight: 600; margin-bottom: 50px; display: flex; align-items: center; gap: 10px; color: #fff; }
+        .brand i { color: var(--primary); }
+        
+        .nav-item {
+            padding: 12px 15px; margin-bottom: 10px; border-radius: 8px; cursor: pointer;
+            color: #BDC3C7; display: flex; align-items: center; gap: 12px; transition: 0.2s;
+        }
+        .nav-item:hover, .nav-item.active { background: rgba(255,255,255,0.1); color: white; }
+        
+        /* Main Content */
+        .main { margin-left: 260px; padding: 40px; width: 100%; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
+        .header h1 { font-size: 1.8em; margin: 0; }
+        
+        /* Cards */
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
+        
+        /* KPI Grid */
+        .kpi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px; margin-bottom: 30px; }
+        .kpi-box { padding: 25px; border-radius: 12px; color: white; position: relative; overflow: hidden; }
+        .kpi-box h3 { font-size: 2.5em; margin: 0; font-weight: 600; }
+        .kpi-box p { margin: 5px 0 0; opacity: 0.8; font-size: 0.9em; text-transform: uppercase; }
+        .kpi-icon { position: absolute; right: 20px; top: 20px; font-size: 3em; opacity: 0.2; }
+
+        /* Tables */
+        table { width: 100%; border-collapse: separate; border-spacing: 0 10px; }
+        th { text-align: left; color: #95A5A6; font-size: 0.85em; padding: 10px 15px; }
+        td { background: white; padding: 15px; border-top: 1px solid #eee; border-bottom: 1px solid #eee; }
+        td:first-child { border-left: 1px solid #eee; border-radius: 8px 0 0 8px; }
+        td:last-child { border-right: 1px solid #eee; border-radius: 0 8px 8px 0; }
+
+        /* Utility */
+        .hidden { display: none !important; }
+        .btn-add { background: var(--success); color: white; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; }
+        .badge { padding: 5px 12px; border-radius: 20px; font-size: 0.8em; background: #E8F8F5; color: var(--success); font-weight: 600; }
+
+    </style>
+</head>
+<body>
+
+    <div id="login-view" class="login-wrapper">
+        <div class="login-card">
+            <div style="font-size: 3em; color: var(--primary); margin-bottom: 10px;"><i class="fa-solid fa-archway"></i></div>
+            <h2>Admin Portal</h2>
+            <p>Department of Tourism, Rajasthan</p>
+            
+            <form onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label>Official Email ID</label>
+                    <input type="email" id="email" class="form-control" placeholder="admin@rajasthan.gov.in" required>
+                </div>
+                <div class="form-group">
+                    <label>Secure Password</label>
+                    <input type="password" id="pass" class="form-control" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn-login">Secure Login</button>
+            </form>
+            <p id="msg" style="color: red; margin-top: 15px;"></p>
+        </div>
+    </div>
+
+    <div id="admin-view" class="dashboard hidden">
+        <nav class="sidebar">
+            <div class="brand"><i class="fa-solid fa-chess-rook"></i> Padharo</div>
+            
+            <div class="nav-item active" onclick="switchTab('overview')" id="nav-overview">
+                <i class="fa-solid fa-chart-pie"></i> Overview
+            </div>
+            <div class="nav-item" onclick="switchTab('staff')" id="nav-staff">
+                <i class="fa-solid fa-users-gear"></i> Staff Management
+            </div>
+            <div class="nav-item" onclick="alert('Configuration Coming Soon')">
+                <i class="fa-solid fa-sliders"></i> Site Config
+            </div>
+            
+            <div style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
+                <div class="nav-item" onclick="location.reload()" style="color: #E74C3C;">
+                    <i class="fa-solid fa-power-off"></i> Logout
+                </div>
+            </div>
+        </nav>
+
+        <div class="main">
+            
+            <div id="view-overview">
+                <div class="header">
+                    <div>
+                        <h1>Dashboard Overview</h1>
+                        <p style="color: #7f8c8d; margin: 0;">Real-time analytics across all heritage sites</p>
+                    </div>
+                </div>
+
+                <div class="kpi-grid">
+                    <div class="kpi-box" style="background: linear-gradient(135deg, #3498DB, #2980B9);">
+                        <div class="kpi-icon"><i class="fa-solid fa-calendar-day"></i></div>
+                        <h3 id="kpi-mtd">0</h3>
+                        <p>Visits This Month</p>
+                    </div>
+                    <div class="kpi-box" style="background: linear-gradient(135deg, #F1C40F, #F39C12);">
+                        <div class="kpi-icon"><i class="fa-solid fa-star"></i></div>
+                        <h3 id="kpi-ytd">0</h3>
+                        <p>Visits This Year</p>
+                    </div>
+                    <div class="kpi-box" style="background: linear-gradient(135deg, #2ECC71, #27AE60);">
+                        <div class="kpi-icon"><i class="fa-solid fa-users"></i></div>
+                        <h3 id="kpi-total">0</h3>
+                        <p>Total Footfall</p>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 25px;">
+                    <div class="card">
+                        <h4 style="margin-top:0; color:#7f8c8d;">VISITOR TRENDS</h4>
+                        <canvas id="trafficChart"></canvas>
+                    </div>
+                    <div class="card">
+                        <h4 style="margin-top:0; color:#7f8c8d;">LIVE CROWD STATUS</h4>
+                        <table>
+                            <thead><tr><th>LOCATION</th><th>STATUS</th></tr></thead>
+                            <tbody id="table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="card" style="margin-top: 20px; border-left: 5px solid #C0392B;">
+                    <div style="display:flex; justify-content:space-between; align-items:center">
+                        <h4 style="margin:0; color:#C0392B;">⚠️ Danger Zone: System Reset</h4>
+                        <button onclick="resetSystem()" style="background:#C0392B; color:white; border:none; padding:8px 15px; border-radius:5px; cursor:pointer;">Factory Reset</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-staff" class="hidden">
+                <div class="header">
+                    <div>
+                        <h1>Staff Management</h1>
+                        <p style="color: #7f8c8d; margin: 0;">Manage access for site personnel</p>
+                    </div>
+                    <button class="btn-add" onclick="showAddStaffModal()">+ Add New Staff</button>
+                </div>
+
+                <div id="add-staff-form" class="card hidden" style="margin-bottom: 20px; border-left: 5px solid var(--success);">
+                    <h3>✨ Register New Staff</h3>
+                    <form onsubmit="handleAddStaff(event)" style="display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 15px; align-items: end;">
+                        <div>
+                            <label style="font-size:0.8em; font-weight:bold;">Name</label>
+                            <input type="text" id="s-name" class="form-control" placeholder="E.g. Rahul Singh" required>
+                        </div>
+                        <div>
+                            <label style="font-size:0.8em; font-weight:bold;">Email (Login ID)</label>
+                            <input type="email" id="s-email" class="form-control" placeholder="rahul@rajasthan.gov.in" required>
+                        </div>
+                        <div>
+                            <label style="font-size:0.8em; font-weight:bold;">Password</label>
+                            <input type="text" id="s-pass" class="form-control" value="staff123" required>
+                        </div>
+                        <button type="submit" class="btn-add">Create Account</button>
+                    </form>
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>NAME</th>
+                            <th>EMAIL ID</th>
+                            <th>ROLE</th>
+                            <th>STATUS</th>
+                        </tr>
+                    </thead>
+                    <tbody id="staff-table-body">
+                        </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+<script>
+    const API_URL = 'http://localhost:5000/api';
+    let myChart = null;
+
+    // --- 1. LOGIN ---
+    async function handleLogin(e) {
+        e.preventDefault();
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('pass').value;
+        
+        try {
+            const res = await fetch(`${API_URL}/login`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ email, password })
+            });
+            const data = await res.json();
+            
+            if(data.success && data.user.role === 'admin') {
+                document.getElementById('login-view').classList.add('hidden');
+                document.getElementById('admin-view').classList.remove('hidden');
+                loadOverview(); // Load default tab
+            } else {
+                document.getElementById('msg').innerText = "❌ Access Denied";
+            }
+        } catch(err) {
+            document.getElementById('msg').innerText = "❌ Server Error";
+        }
+    }
+
+    // --- 2. NAVIGATION ---
+    function switchTab(tabName) {
+        // Hide all views
+        document.getElementById('view-overview').classList.add('hidden');
+        document.getElementById('view-staff').classList.add('hidden');
+        
+        // Remove active class from nav
+        document.getElementById('nav-overview').classList.remove('active');
+        document.getElementById('nav-staff').classList.remove('active');
+
+        // Show selected
+        document.getElementById(`view-${tabName}`).classList.remove('hidden');
+        document.getElementById(`nav-${tabName}`).classList.add('active');
+
+        if(tabName === 'overview') loadOverview();
+        if(tabName === 'staff') loadStaffList();
+    }
+
+    // --- 3. OVERVIEW LOGIC ---
+    async function loadOverview() {
+        const res = await fetch(`${API_URL}/admin/analytics`);
+        const data = await res.json();
+
+        // KPIs
+        document.getElementById('kpi-mtd').innerText = data.kpi.mtd;
+        document.getElementById('kpi-ytd').innerText = data.kpi.ytd;
+        document.getElementById('kpi-total').innerText = data.kpi.total;
+
+        // Table
+        const tbody = document.getElementById('table-body');
+        tbody.innerHTML = '';
+        data.table.forEach(site => {
+            let status = `<span class="badge">Normal</span>`;
+            if(site.currentVisitors > 50) status = `<span class="badge" style="background:#FDEDEC; color:var(--danger)">High Crowd</span>`;
+            tbody.innerHTML += `<tr><td><strong>${site.name}</strong><br><small>${site.currentVisitors} Visitors</small></td><td>${status}</td></tr>`;
+        });
+
+        // Chart
+        renderChart(data.graph.thisYear, data.graph.lastYear);
+    }
+
+    function renderChart(data1, data2) {
+        const ctx = document.getElementById('trafficChart').getContext('2d');
+        if(myChart) myChart.destroy();
+        myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'],
+                datasets: [
+                    { label: '2025', data: data1, borderColor: '#D35400', tension: 0.4 },
+                    { label: '2024', data: data2, borderColor: '#BDC3C7', borderDash:[5,5], tension: 0.4 }
+                ]
+            }
+        });
+    }
+
+    // --- 4. STAFF LOGIC ---
+    async function loadStaffList() {
+        const res = await fetch(`${API_URL}/admin/staff`);
+        const staffList = await res.json();
+        
+        const tbody = document.getElementById('staff-table-body');
+        tbody.innerHTML = '';
+        
+        staffList.forEach(staff => {
+            tbody.innerHTML += `
+                <tr>
+                    <td><div style="font-weight:600">${staff.name}</div></td>
+                    <td>${staff.email}</td>
+                    <td><span class="badge" style="background:#D6EAF8; color:#2980B9">STAFF</span></td>
+                    <td><span style="color:#27AE60">● Active</span></td>
+                </tr>
+            `;
+        });
+    }
+
+    function showAddStaffModal() {
+        document.getElementById('add-staff-form').classList.remove('hidden');
+    }
+
+    async function handleAddStaff(e) {
+        e.preventDefault();
+        const name = document.getElementById('s-name').value;
+        const email = document.getElementById('s-email').value;
+        const password = document.getElementById('s-pass').value;
+
+        const res = await fetch(`${API_URL}/admin/staff/add`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ name, email, password, location: 'General' })
+        });
+        
+        const data = await res.json();
+        if(data.success) {
+            alert("✅ Staff Added Successfully!");
+            document.getElementById('add-staff-form').classList.add('hidden'); // Hide form
+            e.target.reset(); // Clear inputs
+            loadStaffList(); // Refresh table
+        } else {
+            alert("❌ Error: " + data.error);
+        }
+    }
+
+    // --- 5. FACTORY RESET ---
+    async function resetSystem() {
+        if(!confirm("⚠️ ARE YOU SURE? This will delete all tourist records and reset stats to zero. This cannot be undone.")) return;
+        
+        const res = await fetch(`${API_URL}/admin/reset`, { method: 'POST' });
+        const data = await res.json();
+        
+        alert(data.message);
+        loadOverview(); // Refresh data
+    }
+</script>
+
+</body>
+</html>

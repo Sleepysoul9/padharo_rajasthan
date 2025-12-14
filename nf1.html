@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Padharo Rajasthan | Smart Portal</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        /* --- 1. DESIGN SYSTEM --- */
+        :root {
+            --primary: #D35400;       
+            --primary-dark: #A04000;
+            --royal-blue: #1A252F;    
+            --sand: #FDF2E9;          
+            --glass: rgba(255, 255, 255, 0.95);
+            --shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+        }
+
+        * { box-sizing: border-box; transition: all 0.3s ease; }
+        body { margin: 0; font-family: 'Poppins', sans-serif; background-color: var(--sand); color: #2c3e50; overflow-x: hidden; }
+        h1, h2, h3 { font-family: 'Playfair Display', serif; color: var(--royal-blue); }
+        .hidden { display: none !important; }
+        .fade-in { animation: fadeIn 0.5s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Inputs & Buttons */
+        .form-control { width: 100%; padding: 15px; margin-bottom: 20px; border: 2px solid #e0e0e0; border-radius: 12px; background: rgba(255,255,255,0.9); font-size: 15px; }
+        .btn-main { width: 100%; padding: 15px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; border: none; border-radius: 12px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 15px rgba(211, 84, 0, 0.3); cursor: pointer; }
+        
+        /* --- LOGIN & ADMIN STYLES (Kept Compact) --- */
+        .login-wrapper { height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1599661046289-e31897846e41?q=80&w=1920'); background-size: cover; }
+        .glass-card { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); padding: 50px 40px; border-radius: 24px; text-align: center; box-shadow: var(--shadow); width: 90%; max-width: 400px; }
+        
+        /* Admin Styles */
+        .admin-layout { display: flex; min-height: 100vh; }
+        .sidebar { width: 260px; background: var(--royal-blue); color: white; padding: 20px; position: fixed; height: 100%; }
+        .admin-main { margin-left: 260px; padding: 40px; width: 100%; }
+        .kpi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .kpi-box { padding: 20px; border-radius: 15px; color: white; background: #3498DB; }
+
+        /* --- NEW TOURIST PANEL STYLES --- */
+        .tourist-layout {
+            min-height: 100vh; background: #f0f2f5; display: flex; flex-direction: column;
+            padding-bottom: 80px; /* Space for bottom nav */
+        }
+        
+        .tourist-header {
+            background: var(--primary); color: white; padding: 30px 20px 60px; 
+            border-radius: 0 0 30px 30px; position: relative;
+            box-shadow: 0 10px 20px rgba(211, 84, 0, 0.2);
+        }
+        
+        .tourist-card {
+            background: white; width: 90%; margin: -40px auto 20px; 
+            padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            position: relative; z-index: 10;
+        }
+
+        .location-badge {
+            background: rgba(255,255,255,0.2); padding: 5px 15px; 
+            border-radius: 20px; display: inline-flex; align-items: center; gap: 8px;
+            font-size: 0.9em; backdrop-filter: blur(5px);
+        }
+
+        /* Suggestion Cards */
+        .place-card {
+            display: flex; gap: 15px; padding: 15px; margin-bottom: 15px;
+            background: white; border-radius: 15px; border: 1px solid #eee;
+            align-items: center;
+        }
+        .place-img {
+            width: 70px; height: 70px; border-radius: 12px; object-fit: cover;
+            background: #eee;
+        }
+        .distance-tag {
+            font-size: 0.75em; font-weight: bold; color: var(--primary);
+            background: #FEF5E7; padding: 4px 8px; border-radius: 6px;
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; width: 100%; height: 70px;
+            background: white; display: flex; justify-content: space-around; align-items: center;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.05); z-index: 100;
+            border-top: 1px solid #eee;
+        }
+        .nav-item {
+            display: flex; flex-direction: column; align-items: center; 
+            color: #95a5a6; font-size: 0.8em; background: none; border: none;
+        }
+        .nav-item i { font-size: 1.5em; margin-bottom: 4px; }
+        .nav-item.active { color: var(--primary); }
+
+        /* Animation for Locating */
+        .pulse { animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+
+    </style>
+</head>
+<body>
+
+    <div id="view-login" class="login-wrapper fade-in">
+        <div class="glass-card">
+            <h1 style="margin:0; color:var(--primary);"><i class="fa-solid fa-gopuram"></i></h1>
+            <h2 style="margin: 10px 0 30px;">Padharo Rajasthan</h2>
+            
+            <form onsubmit="handleLogin(event)">
+                <input type="email" id="login-email" class="form-control" placeholder="Staff Email" required>
+                <input type="password" id="login-pass" class="form-control" placeholder="Password" required>
+                <button type="submit" class="btn-main">Staff Login</button>
+            </form>
+            <p id="login-msg" style="color:red; margin-top:15px; font-size:0.9em;"></p>
+            
+            <hr style="margin: 25px 0; opacity:0.3;">
+            <button onclick="switchView('tourist')" style="background:none; border:none; color:var(--royal-blue); font-weight:600; cursor:pointer; font-size:1.1em;">
+                I am a Tourist &rarr;
+            </button>
+        </div>
+    </div>
+
+    <div id="view-admin" class="admin-layout hidden fade-in">
+        <nav class="sidebar">
+            <h3>Admin Panel</h3>
+            <div onclick="logout()" style="margin-top:20px; cursor:pointer;">Logout</div>
+        </nav>
+        <div class="admin-main">
+            <h1>Analytics</h1>
+            <div class="kpi-grid">
+                <div class="kpi-box">Total Visits: <span id="kpi-total" style="font-weight:bold">0</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="view-staff" class="hidden"><button onclick="logout()">Logout</button> Staff Panel Loaded</div>
+
+    <div id="view-tourist" class="tourist-layout hidden fade-in">
+        
+        <div class="tourist-header">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <h2 style="color:white; margin:0; font-size:1.8em;">Namaste! 🙏</h2>
+                    <p style="color:rgba(255,255,255,0.9); margin:5px 0 0;">Explore the Pink City</p>
+                </div>
+                <button onclick="switchView('login')" style="color:white; background:rgba(255,255,255,0.2); border:none; padding:8px 15px; border-radius:20px;">Staff?</button>
+            </div>
+            
+            <div style="margin-top: 20px;">
+                <div id="geo-status" class="location-badge">
+                    <i class="fa-solid fa-location-dot"></i> <span id="location-text">Detecting location...</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-ticket" class="tab-content">
+            <div class="tourist-card">
+                <h3 style="margin-top:0"><i class="fa-solid fa-ticket"></i> My Ticket</h3>
+                <p style="color:#777; font-size:0.9em; margin-bottom:20px;">Enter your 6-digit ID to validate entry.</p>
+                
+                <input id="kiosk-id" class="form-control" placeholder="Ex: X7A9B2" style="text-align:center; letter-spacing:3px; font-weight:bold; font-size:1.4em; text-transform:uppercase;">
+                <button onclick="checkTicketStatus()" class="btn-main">Check Validity</button>
+                
+                <div id="kiosk-result" style="margin-top:20px; padding:15px; border-radius:10px; text-align:center; display:none;"></div>
+            </div>
+
+            <div style="padding: 20px;">
+                <h3 style="font-size:1.2em;">Did you know?</h3>
+                <div style="background: white; border-radius: 15px; padding: 20px; display:flex; gap:15px; align-items:center;">
+                    <div style="font-size:2em; color:var(--primary);"><i class="fa-solid fa-camera"></i></div>
+                    <p style="margin:0; color:#555; font-size:0.9em;">Flash photography is prohibited inside the City Palace museum.</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-explore" class="tab-content hidden">
+            <div class="tourist-card">
+                <h3 style="margin-top:0; display:flex; align-items:center; gap:10px;">
+                    <i class="fa-solid fa-compass" style="color:var(--primary)"></i> Nearby Gems
+                </h3>
+                <p style="font-size:0.85em; color:#777;">Based on your current location</p>
+                
+                <div id="suggestions-list">
+                    <div style="text-align:center; padding:20px; color:#aaa;">
+                        <i class="fa-solid fa-satellite-dish pulse" style="font-size:2em;"></i>
+                        <p>Scanning surroundings...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bottom-nav">
+            <button class="nav-item active" onclick="switchTab('ticket', this)">
+                <i class="fa-solid fa-ticket"></i>
+                <span>Ticket</span>
+            </button>
+            <button class="nav-item" onclick="switchTab('explore', this)">
+                <i class="fa-solid fa-map-location-dot"></i>
+                <span>Explore</span>
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5000/api';
+
+        // --- 1. GEOLOCATION & SUGGESTIONS LOGIC ---
+        
+        // Database of Monuments (Lat/Lon)
+        const monuments = [
+            { name: "Hawa Mahal", lat: 26.9239, lon: 75.8267, img: "https://images.unsplash.com/photo-1599661046289-e31897846e41?w=100", type: "Palace" },
+            { name: "Amer Fort", lat: 26.9855, lon: 75.8513, img: "https://images.unsplash.com/photo-1585148083816-64c8d55a305e?w=100", type: "Fort" },
+            { name: "City Palace", lat: 26.9258, lon: 75.8237, img: "https://images.unsplash.com/photo-1601655077273-e380e227a92c?w=100", type: "Museum" },
+            { name: "Albert Hall", lat: 26.9116, lon: 75.8195, img: "https://images.unsplash.com/photo-1588661706689-d10206132641?w=100", type: "Museum" },
+            { name: "Jantar Mantar", lat: 26.9247, lon: 75.8245, img: "https://images.unsplash.com/photo-1524230507669-5ff97982bb5e?w=100", type: "Observatory" }
+        ];
+
+        // Function: Calculate Distance (Haversine Formula)
+        function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
+            var R = 6371; // Radius of the earth in km
+            var dLat = deg2rad(lat2-lat1);  
+            var dLon = deg2rad(lon2-lon1); 
+            var a = 
+                Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.sin(dLon/2) * Math.sin(dLon/2); 
+            var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+            var d = R * c; // Distance in km
+            return d.toFixed(1);
+        }
+
+        function deg2rad(deg) {
+            return deg * (Math.PI/180)
+        }
+
+        // Initialize Location
+        function initTouristLocation() {
+            const statusText = document.getElementById('location-text');
+            const listContainer = document.getElementById('suggestions-list');
+
+            if (!navigator.geolocation) {
+                statusText.innerText = "Geolocation not supported";
+                return;
+            }
+
+            statusText.innerText = "Locating you...";
+
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const userLat = position.coords.latitude;
+                    const userLon = position.coords.longitude;
+
+                    statusText.innerText = "Location Detected";
+                    statusText.parentElement.style.background = "rgba(46, 204, 113, 0.3)"; // Greenish
+
+                    // Calculate distances and sort
+                    const sortedMonuments = monuments.map(m => {
+                        return { ...m, distance: getDistanceFromLatLonInKm(userLat, userLon, m.lat, m.lon) };
+                    }).sort((a, b) => a.distance - b.distance);
+
+                    // Render HTML
+                    listContainer.innerHTML = "";
+                    sortedMonuments.forEach(m => {
+                        listContainer.innerHTML += `
+                            <div class="place-card">
+                                <img src="${m.img}" class="place-img">
+                                <div style="flex:1">
+                                    <h4 style="margin:0; color:var(--royal-blue)">${m.name}</h4>
+                                    <small style="color:#777">${m.type}</small>
+                                </div>
+                                <div class="distance-tag">${m.distance} km</div>
+                            </div>
+                        `;
+                    });
+                },
+                (error) => {
+                    statusText.innerText = "Location Denied";
+                    // Fallback: Show random list if location denied
+                    listContainer.innerHTML = `<p style="text-align:center; color:red;">Please enable location to see distances.</p>`;
+                    monuments.forEach(m => {
+                        listContainer.innerHTML += `
+                            <div class="place-card">
+                                <img src="${m.img}" class="place-img">
+                                <div style="flex:1">
+                                    <h4 style="margin:0; color:var(--royal-blue)">${m.name}</h4>
+                                    <small style="color:#777">${m.type}</small>
+                                </div>
+                            </div>`;
+                    });
+                }
+            );
+        }
+
+        // --- 2. NAVIGATION & TABS ---
+        function switchView(viewName) {
+            ['view-login', 'view-admin', 'view-staff', 'view-tourist'].forEach(id => document.getElementById(id).classList.add('hidden'));
+            document.getElementById(`view-${viewName}`).classList.remove('hidden');
+            
+            if(viewName === 'tourist') {
+                initTouristLocation(); // Start location service
+            }
+        }
+
+        function switchTab(tabName, btnElement) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            // Show selected
+            document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+            
+            // Update Nav Icons
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            btnElement.classList.add('active');
+        }
+
+        // --- 3. TICKET CHECKER LOGIC ---
+        async function checkTicketStatus() {
+            const ticketId = document.getElementById('kiosk-id').value;
+            const resBox = document.getElementById('kiosk-result');
+            
+            if(!ticketId) return;
+
+            resBox.style.display = 'block';
+            resBox.innerHTML = "Checking...";
+            resBox.style.background = "#eee";
+
+            try {
+                const res = await fetch(`${API_URL}/staff/validate`, {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ ticketId, attractionId: 'CHECK_ONLY' })
+                });
+                const data = await res.json();
+                
+                if(data.success) {
+                    resBox.style.background = "#D5F5E3";
+                    resBox.style.color = "#196F3D";
+                    resBox.innerHTML = `<strong>✅ VALID TICKET</strong><br>Owner: ${data.tourist}`;
+                } else {
+                    if(data.message.includes("used")) {
+                        resBox.style.background = "#FEF9E7";
+                        resBox.style.color = "#F39C12";
+                        resBox.innerHTML = `<strong>⚠️ ALREADY USED</strong><br>Entry recorded today.`;
+                    } else {
+                        resBox.style.background = "#FADBD8";
+                        resBox.style.color = "#922B21";
+                        resBox.innerHTML = `<strong>❌ INVALID</strong><br>Ticket ID not found.`;
+                    }
+                }
+            } catch(e) {
+                resBox.innerText = "Server Error";
+            }
+        }
+
+        // --- 4. LOGIN LOGIC (Standard) ---
+        async function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-pass').value;
+            // ... (Keep existing login logic here or paste from previous response)
+            // For brevity in this snippet, I assume you have the handleLogin logic from the previous code block.
+            // If you need the full function again, let me know.
+             try {
+                const res = await fetch(`${API_URL}/login`, {
+                    method: 'POST', 
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await res.json();
+
+                if(data.success) {
+                    if(data.user.role === 'admin') { switchView('admin'); loadAdminDashboard(); } 
+                    else if(data.user.role === 'staff') { switchView('staff'); }
+                } else {
+                    document.getElementById('login-msg').innerText = "❌ " + (data.error || "Login Failed");
+                }
+            } catch(err) { console.log(err); }
+        }
+
+        // --- 5. ADMIN LOGIC STUBS ---
+        async function loadAdminDashboard() {
+             const res = await fetch(`${API_URL}/admin/analytics`);
+             const data = await res.json();
+             document.getElementById('kpi-total').innerText = data.kpi.total;
+        }
+        function logout() { location.reload(); }
+
+    </script>
+</body>
+</html>

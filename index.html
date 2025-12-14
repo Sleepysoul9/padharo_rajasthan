@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Padharo Rajasthan | Smart Tourism</title>
+    <style>
+        :root { --primary: #D35400; --secondary: #2C3E50; --bg: #FDF2E9; --white: #ffffff; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; display: flex; justify-content: center; min-height: 100vh; }
+        
+        /* Containers */
+        .container { width: 100%; max-width: 1000px; padding: 20px; }
+        .card { background: var(--white); padding: 25px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .hidden { display: none; }
+
+        /* Typography */
+        h1, h2 { color: var(--primary); margin-top: 0; }
+        h1 span { color: var(--secondary); font-size: 0.6em; display: block; }
+        
+        /* Forms */
+        input, select { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+        button { background: var(--primary); color: white; border: none; padding: 12px 20px; width: 100%; border-radius: 6px; cursor: pointer; font-size: 16px; transition: 0.3s; }
+        button:hover { background: #A04000; }
+        .btn-secondary { background: var(--secondary); margin-top: 10px; }
+
+        /* Tables & Lists */
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+        .badge { padding: 5px 10px; border-radius: 15px; font-size: 0.8em; font-weight: bold; background: #eee; }
+
+        /* Specific Views */
+        .qr-display { text-align: center; border: 2px dashed var(--primary); padding: 20px; margin: 20px 0; }
+        .location-card { border-left: 5px solid var(--primary); padding-left: 15px; background: #FFF5F0; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    
+    <div id="login-view" class="card" style="max-width: 400px; margin: 50px auto;">
+        <h1>🐪 Padharo <span>Rajasthan Tourism Portal</span></h1>
+        <p>Please log in to continue</p>
+        
+        <form onsubmit="handleLogin(event)">
+            <label>Email ID</label>
+            <input type="email" id="login-email" placeholder="admin@... / staff... / tourist..." required>
+            
+            <label>Password</label>
+            <input type="password" id="login-pass" placeholder="Enter Password" required>
+            
+            <button type="submit">Secure Login</button>
+        </form>
+        <p id="login-msg" style="color: red; text-align: center; margin-top: 10px;"></p>
+    </div>
+
+    <div id="admin-view" class="hidden">
+        <header class="card" style="display:flex; justify-content:space-between; align-items:center;">
+            <h2>👮 Admin Dashboard</h2>
+            <button onclick="logout()" style="width:auto;" class="btn-secondary">Logout</button>
+        </header>
+
+        <div class="card">
+            <h3>📊 Live Site Analytics</h3>
+            <button onclick="fetchAnalytics()" style="width: auto; margin-bottom: 15px;">Refresh Data</button>
+            <table id="admin-table">
+                <thead><tr><th>Location</th><th>Current Visitors</th><th>Total Yearly</th></tr></thead>
+                <tbody id="admin-tbody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="staff-view" class="hidden">
+        <header class="card" style="display:flex; justify-content:space-between; align-items:center;">
+            <h2 id="staff-title">👷 Staff Dashboard</h2>
+            <button onclick="logout()" style="width:auto;" class="btn-secondary">Logout</button>
+        </header>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div class="card">
+                <h3>🎟️ Issue New Ticket</h3>
+                <form onsubmit="createTourist(event)">
+                    <input type="text" id="new-name" placeholder="Tourist Name" required>
+                    <input type="email" id="new-email" placeholder="Tourist Email" required>
+                    <button type="submit">Generate & Email Ticket</button>
+                </form>
+                <p id="create-msg" style="margin-top:10px;"></p>
+            </div>
+
+            <div class="card">
+                <h3>🔍 Validate Entry</h3>
+                <p>Enter the 6-digit code from the Tourist's QR.</p>
+                <form onsubmit="validateEntry(event)">
+                    <input type="text" id="check-code" placeholder="Example: X7K9P2" style="font-size: 1.5em; letter-spacing: 5px; text-transform: uppercase;" required>
+                    <button type="submit">Validate Access</button>
+                </form>
+                <p id="validate-msg" style="margin-top:10px; font-weight: bold; font-size: 1.2em;"></p>
+            </div>
+        </div>
+    </div>
+
+    <div id="tourist-view" class="hidden">
+        <header class="card" style="display:flex; justify-content:space-between; align-items:center;">
+            <h2>🎒 My Travel Pass</h2>
+            <button onclick="logout()" style="width:auto;" class="btn-secondary">Logout</button>
+        </header>
+
+        <div class="card location-card">
+            <h3>📍 Live Status</h3>
+            <p><strong>Current Location:</strong> <span id="user-location" style="color: var(--primary); font-weight: bold;">Loading...</span></p>
+        </div>
+
+        <div class="card">
+            <h3>🗺️ Nearby Suggestions</h3>
+            <div id="nearby-list">Loading nearby attractions...</div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    const API_URL = 'http://localhost:5000/api';
+    let currentUser = null;
+
+    // --- LOGIN LOGIC ---
+    async function handleLogin(e) {
+        e.preventDefault();
+        const email = document.getElementById('login-email').value;
+        const password = document.getElementById('login-pass').value;
+        const msg = document.getElementById('login-msg');
+
+        try {
+            msg.innerText = "Verifying...";
+            const res = await fetch(`${API_URL}/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+            const data = await res.json();
+
+            if (!data.success) throw new Error(data.error);
+
+            currentUser = data.user;
+            document.getElementById('login-view').classList.add('hidden');
+            
+            // Route to correct Dashboard
+            if (currentUser.role === 'admin') loadAdminView();
+            else if (currentUser.role === 'staff') loadStaffView(currentUser);
+            else if (currentUser.role === 'tourist') loadTouristView(data.data);
+
+        } catch (err) {
+            msg.innerText = "❌ " + err.message;
+        }
+    }
+
+    // --- STAFF FUNCTIONS ---
+    function loadStaffView(user) {
+        document.getElementById('staff-view').classList.remove('hidden');
+        // Extract location from email (simple hack for demo)
+        const location = user.email.split('.')[1].split('@')[0]; 
+        document.getElementById('staff-title').innerText = `👷 Staff Dashboard (${location.toUpperCase()})`;
+        currentUser.location = location.charAt(0).toUpperCase() + location.slice(1); // "hawamahal" -> "Hawamahal"
+    }
+
+    async function createTourist(e) {
+        e.preventDefault();
+        const btn = e.target.querySelector('button');
+        const msg = document.getElementById('create-msg');
+        
+        btn.innerText = "Processing...";
+        
+        try {
+            const res = await fetch(`${API_URL}/staff/create`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: document.getElementById('new-name').value,
+                    email: document.getElementById('new-email').value
+                })
+            });
+            const data = await res.json();
+            if(data.success) {
+                msg.innerHTML = `✅ Success! Ticket sent to email.`;
+                msg.style.color = "green";
+                e.target.reset();
+            } else throw new Error(data.error);
+        } catch(err) {
+            msg.innerText = "❌ " + err.message;
+            msg.style.color = "red";
+        }
+        btn.innerText = "Generate & Email Ticket";
+    }
+
+    async function validateEntry(e) {
+        e.preventDefault();
+        // Force Uppercase and remove accidental spaces
+        const code = document.getElementById('check-code').value.trim().toUpperCase();
+        const msg = document.getElementById('validate-msg');
+        
+        // Fix location name formatting for matching DB
+        let locName = "Hawa Mahal"; // Default for demo if parsing fails
+        if(currentUser.email.includes("hawa")) locName = "Hawa Mahal";
+        if(currentUser.email.includes("amber")) locName = "Amber Fort";
+        
+        try {
+            const res = await fetch(`${API_URL}/staff/validate`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ uniqueCode: code, location: locName })
+            });
+            const data = await res.json();
+            
+            if(data.success) {
+                msg.innerText = data.message;
+                msg.style.color = "green";
+                document.body.style.backgroundColor = "#D4EFDF"; // Flash Green
+                setTimeout(() => document.body.style.backgroundColor = "#FDF2E9", 1000);
+            } else {
+                throw new Error(data.error);
+            }
+        } catch (err) {
+            msg.innerText = err.message;
+            msg.style.color = "red";
+            document.body.style.backgroundColor = "#FADBD8"; // Flash Red
+            setTimeout(() => document.body.style.backgroundColor = "#FDF2E9", 1000);
+        }
+    }
+
+    // --- ADMIN FUNCTIONS ---
+    async function loadAdminView() {
+        document.getElementById('admin-view').classList.remove('hidden');
+        fetchAnalytics();
+    }
+
+    async function fetchAnalytics() {
+        const res = await fetch(`${API_URL}/admin/analytics`);
+        const data = await res.json();
+        const tbody = document.getElementById('admin-tbody');
+        tbody.innerHTML = '';
+        data.attractions.forEach(site => {
+            tbody.innerHTML += `<tr><td>${site.name}</td><td>${site.currentVisitors}</td><td>${site.totalVisitsYearly}</td></tr>`;
+        });
+    }
+
+    // --- TOURIST FUNCTIONS ---
+    function loadTouristView(data) {
+        document.getElementById('tourist-view').classList.remove('hidden');
+        document.getElementById('user-location').innerText = data.currentLocation || "Not Checked In";
+        
+        const list = document.getElementById('nearby-list');
+        list.innerHTML = '';
+        if(data.nearbyAttractions.length === 0) {
+            list.innerHTML = '<p>No suggestions available.</p>';
+        } else {
+            data.nearbyAttractions.forEach(place => {
+                list.innerHTML += `<div style="padding:10px; border-bottom:1px solid #eee;">
+                    <strong>${place.name}</strong> <br>
+                    <small>Current Crowd: ${place.currentVisitors}</small>
+                </div>`;
+            });
+        }
+    }
+
+    function logout() {
+        location.reload();
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,43 @@
+################################
+# 1. DEPENDENCIES & BUILD ARTIFACTS
+################################
+
+# Node/NPM dependencies (VERY IMPORTANT)
+node_modules/
+
+# Build folders (where compiled/transpiled code goes)
+dist/
+build/
+coverage/
+
+# Logs and cache files
+npm-debug.log
+.cache
+*.log
+
+################################
+# 2. SENSITIVE & ENVIRONMENT FILES
+################################
+
+# Environment configuration files
+# This is CRITICAL. It keeps your MongoDB connection string and email credentials PRIVATE.
+.env
+.env.local
+.env.*
+
+# Local database file if you are using SQLite or other local DBs
+*.db
+*.sqlite
+
+################################
+# 3. OS & EDITOR FILES
+################################
+
+# macOS (Ignore these if you're not on a Mac)
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# VS Code specific files
+.vscode/ 

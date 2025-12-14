@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Padharo Rajasthan | Super Admin</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root { --primary: #D35400; --secondary: #2C3E50; --bg: #F4F6F7; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; }
+        
+        /* Layout */
+        .container { max-width: 1200px; margin: 0 auto; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 20px; }
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .hidden { display: none; }
+        
+        /* Typography & Buttons */
+        h1, h2, h3 { color: var(--secondary); margin-top: 0; }
+        button { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; }
+        button:hover { opacity: 0.9; }
+        .btn-danger { background: #C0392B; margin-top: 10px; width: 100%; }
+
+        /* KPI Cards */
+        .kpi-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 20px; }
+        .kpi-card { background: linear-gradient(135deg, #D35400, #E67E22); color: white; padding: 20px; border-radius: 10px; text-align: center; }
+        .kpi-value { font-size: 2.5em; font-weight: bold; margin: 10px 0; }
+        .kpi-label { text-transform: uppercase; font-size: 0.8em; opacity: 0.9; }
+
+        /* Login Box */
+        .login-box { max-width: 400px; margin: 100px auto; text-align: center; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <div id="login-view" class="card login-box">
+        <h1 style="color:var(--primary)">🐫 Padharo Admin</h1>
+        <form onsubmit="handleLogin(event)">
+            <input type="email" id="email" placeholder="Email" required>
+            <input type="password" id="pass" placeholder="Password" required>
+            <button type="submit" style="width:100%">Login</button>
+        </form>
+        <p id="msg" style="color:red"></p>
+    </div>
+
+    <div id="admin-view" class="hidden">
+        <header style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <h1>📊 Super Admin Analytics</h1>
+            <button onclick="logout()" style="background:#7F8C8D">Logout</button>
+        </header>
+
+        <div class="kpi-container">
+            <div class="kpi-card">
+                <div class="kpi-label">Month to Date (MTD)</div>
+                <div class="kpi-value" id="kpi-mtd">0</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Year to Date (YTD)</div>
+                <div class="kpi-value" id="kpi-ytd">0</div>
+            </div>
+            <div class="kpi-card" style="background: linear-gradient(135deg, #2C3E50, #34495E);">
+                <div class="kpi-label">Total Lifetime Visits</div>
+                <div class="kpi-value" id="kpi-total">0</div>
+            </div>
+        </div>
+
+        <div class="grid">
+            <div class="card" style="grid-column: span 2;">
+                <h3>📈 Tourist Influx (This Year vs Last Year)</h3>
+                <canvas id="trafficChart"></canvas>
+            </div>
+
+            <div class="card">
+                <h3>🏰 Live Crowd Status</h3>
+                <table style="width:100%; text-align:left; border-collapse: collapse;">
+                    <thead><tr style="border-bottom:2px solid #eee;"><th>Site</th><th>Now</th><th>Total</th></tr></thead>
+                    <tbody id="table-body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card" style="margin-top: 30px; border: 2px solid #C0392B;">
+            <h3 style="color:#C0392B;">⚠️ Danger Zone</h3>
+            <p>Clear all tourist data, visit logs, and analytics. Admin & Staff accounts will remain.</p>
+            <button onclick="resetSystem()" class="btn-danger">FACTORY RESET SYSTEM</button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    const API_URL = 'http://localhost:5000/api';
+    let myChart = null;
+
+    // --- LOGIN ---
+    async function handleLogin(e) {
+        e.preventDefault();
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('pass').value;
+        
+        const res = await fetch(`${API_URL}/login`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        
+        if(data.success && data.user.role === 'admin') {
+            document.getElementById('login-view').classList.add('hidden');
+            document.getElementById('admin-view').classList.remove('hidden');
+            loadDashboard();
+        } else {
+            document.getElementById('msg').innerText = "❌ Admin Access Only";
+        }
+    }
+
+    // --- DASHBOARD LOGIC ---
+    async function loadDashboard() {
+        const res = await fetch(`${API_URL}/admin/analytics`);
+        const data = await res.json();
+
+        // 1. Update KPIs
+        document.getElementById('kpi-mtd').innerText = data.kpi.mtd;
+        document.getElementById('kpi-ytd').innerText = data.kpi.ytd;
+        document.getElementById('kpi-total').innerText = data.kpi.total;
+
+        // 2. Update Table
+        const tbody = document.getElementById('table-body');
+        tbody.innerHTML = '';
+        data.table.forEach(site => {
+            tbody.innerHTML += `
+                <tr style="border-bottom:1px solid #eee; height: 40px;">
+                    <td>${site.name}</td>
+                    <td><strong>${site.currentVisitors}</strong></td>
+                    <td>${site.totalVisitsYearly}</td>
+                </tr>`;
+        });
+
+        // 3. Render Chart
+        renderChart(data.graph.thisYear, data.graph.lastYear);
+    }
+
+    // --- CHART.JS GRAPH ---
+    function renderChart(thisYearData, lastYearData) {
+        const ctx = document.getElementById('trafficChart').getContext('2d');
+        
+        // Destroy old chart if exists (to prevent glitches on refresh)
+        if(myChart) myChart.destroy();
+
+        myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                datasets: [
+                    {
+                        label: 'This Year (2025)',
+                        data: thisYearData,
+                        borderColor: '#D35400',
+                        backgroundColor: 'rgba(211, 84, 0, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Last Year (2024)',
+                        data: lastYearData,
+                        borderColor: '#95A5A6',
+                        borderDash: [5, 5], // Dotted line for past data
+                        tension: 0.4
+                    }
+                ]
+            },
+            options: { responsive: true }
+        });
+    }
+
+    // --- RESET SYSTEM ---
+    async function resetSystem() {
+        if(!confirm("⚠️ ARE YOU SURE? This will delete all tourist records and reset stats to zero. This cannot be undone.")) return;
+        
+        const res = await fetch(`${API_URL}/admin/reset`, { method: 'POST' });
+        const data = await res.json();
+        
+        alert(data.message);
+        loadDashboard(); // Refresh data (everything should be 0 now)
+    }
+
+    function logout() { location.reload(); }
+</script>
+
+</body>
+</html>
